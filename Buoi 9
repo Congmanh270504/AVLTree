@@ -1,3 +1,432 @@
+//Hàm viết bến file
+//#ifndef  AVL_Tree_H
+#define AVL_Tree_H
+
+
+#include<conio.h>
+#include<stdio.h>
+#include<stdlib.h>
+
+
+#define LH -1
+#define EH 0
+#define RH 1
+
+typedef int Itemtype;
+struct AVLNode
+{
+	int BalFactor;
+	Itemtype data;
+	AVLNode *Left = NULL;
+	AVLNode *Right = NULL;
+};
+struct AVLTree
+{
+	AVLNode *Root;
+};
+AVLNode *CreateAVLTNode(Itemtype x);
+void InitAVLTree(AVLTree &avl);
+void rotateLL(AVLNode*&T);
+void rotateLR(AVLNode*&T);
+void rotateRL(AVLNode*&T);
+void rotateRR(AVLNode*&T);
+int balanceLeft(AVLNode*&T);
+int balanceRight(AVLNode*&T);
+int insertAVNode(AVLNode*&T, AVLNode *p);
+int searchStrandFor(AVLNode*&p, AVLNode*&q);
+int deleteAVLNode(AVLNode*&T, Itemtype x);
+void createAVLTree(AVLNode*&T, int n);
+int traverseLNR(AVLNode *root);
+AVLNode *findAVLNode(AVLNode *root, Itemtype x);
+void ShowAVLTree(AVLNode *&T, int &flag);
+#endif//
+//scr định nghĩa hàm
+//#ifndef AVL_Tree_CPP
+#define AVL_Tree_CPP
+#include"CayAVL-SoNguyen.h"
+
+
+AVLNode *CreateAVLTNode(Itemtype x)
+{
+	AVLNode *p = new AVLNode;
+	if (p == NULL)
+	{
+		printf("Khong the khoi tao AVLTNode!! ");
+		return NULL;
+	}
+	p->BalFactor = 0;
+	p->data = x;
+	return p;
+}
+
+void InitAVLTree(AVLTree &avl)
+{
+	avl.Root = NULL;
+}
+void rotateLL(AVLNode*&T)// Cái hàm này cx như là hàm LB luôn 
+{
+	AVLNode*T1 = T->Left;
+	T->Left = T1->Right;
+	switch (T1->BalFactor)
+	{
+	case LH:
+		T->BalFactor = EH;
+		T1->BalFactor = EH;
+		break;
+	case EH:
+		T->BalFactor = LH;
+		T1->BalFactor = RH;
+		break;
+
+	}
+	T = T1;
+}
+void rotateLR(AVLNode*&T)
+{
+	AVLNode*T1 = T->Left;
+	AVLNode *T2 = T1->Right;
+	T1->Right = T2->Left;
+	T2->Left = T1;
+	T->Left = T2->Right;
+	T2->Right = T;
+	switch (T2->BalFactor)
+	{
+	case LH:
+		T->BalFactor = RH;
+		T1->BalFactor = EH;
+		break;
+	case EH:
+		T->BalFactor = EH;
+		T1->BalFactor = EH;
+		break;
+	case RH:
+		T->BalFactor = EH;
+		T1->BalFactor = LH;
+		break;
+
+	}
+	T2->BalFactor = EH;
+	T = T2;
+}
+
+void rotateRL(AVLNode*&T)
+{
+	AVLNode*T1 = T->Right;
+	AVLNode *T2 = T1->Left;
+	T1->Left = T2->Right;
+	T2->Right = T1;
+	T->Right = T2->Left;
+	T2->Left = T;
+	switch (T2->BalFactor)
+	{
+	case LH:
+		T->BalFactor = LH;
+		T1->BalFactor = EH;
+		break;
+	case EH:
+		T->BalFactor = EH;
+		T1->BalFactor = EH;
+		break;
+	case RH:
+		T->BalFactor = EH;
+		T1->BalFactor = RH;
+		break;
+
+	}
+	T2->BalFactor = EH;
+	T = T2;
+}
+void rotateRR(AVLNode*&T)// RR cx như là RB luôn 
+{
+	AVLNode*T1 = T->Right;
+	T->Right = T1->Left;
+	switch (T1->BalFactor)
+	{
+	case LH:
+		T->BalFactor = EH;
+		T1->BalFactor = EH;
+		break;
+	case EH:
+		T->BalFactor = RH;
+		T1->BalFactor = LH;
+		break;
+
+	}
+	T = T1;
+}
+int balanceLeft(AVLNode*&T)
+{
+	AVLNode *T1 = T->Left;
+	switch (T1->BalFactor)
+	{
+	case LH:
+		rotateLL(T);
+		return 2;
+	case EH:
+		rotateLL(T);
+		return 1;
+	case RH:
+		rotateLR(T);
+		return 2;
+	}
+	return 0;
+}
+int balanceRight(AVLNode*&T)
+{
+	AVLNode *T1 = T->Right;
+	switch (T1->BalFactor)
+	{
+	case LH:
+		rotateRL(T);
+		return 2;
+	case EH:
+		rotateRR(T);
+		return 1;
+	case RH:
+		rotateRR(T);
+		return 2;
+	}
+	return 0;
+}
+int insertAVNode(AVLNode*&T, AVLNode *p)//
+{
+	if (p == NULL)
+	{
+		return -1;
+	}
+	if (T == NULL)
+	{//Cây rỗng nên thêm node p vào cái root
+		T = p;
+		return 2;//Thực hiện thành công
+	}
+	//Cây không rỗng
+	int Result;
+	if (T->data == p->data)
+	{
+		return 0;// trùng giá trị không thêm đc 
+	}
+	if (T->data > p->data)
+	{// Thêm nút mới vào nhánh trái
+		Result = insertAVNode(T->Left, p);
+		if (Result < 2)
+			return Result;
+		switch (T->BalFactor)
+		{
+		case RH:
+			T->BalFactor = EH;
+			return 1;
+		case EH:
+			T->BalFactor = LH;
+			return 2;
+		case LH:
+			balanceLeft(T);
+			return 1;
+
+		}
+	}
+	else
+	{//Thêm nút mới vào nhánh pải
+		Result = insertAVNode(T->Right, p);
+		if (Result < 2)
+		{
+			return Result;
+		}
+		switch (T->BalFactor)
+		{
+		case LH:
+			T->BalFactor = EH;
+			return 1;
+		case EH:
+			T->BalFactor = RH;
+			return 2;
+		case RH:
+			balanceRight(T);
+			return 1;
+		}
+	}
+}
+int searchStrandFor(AVLNode*&p, AVLNode*&q)
+{
+	int Result;
+	if (q->Left != NULL)
+	{
+		Result = searchStrandFor(p, q->Left);
+		if (Result < 2)
+		{
+			return Result;
+		}
+		switch (q->BalFactor)
+		{
+		case LH:
+			q->BalFactor = EH;
+			return 2;
+		case EH:
+			q->BalFactor = RH;
+			return 1;
+		case RH:
+			return balanceRight(q);
+		}
+	}
+	else
+	{
+		p->data = q->data;
+		p = q;
+		q = q->Right;
+	}
+	return 2;
+}
+int deleteAVLNode(AVLNode*&T, Itemtype x)
+{//Xóa nút có data=x
+	int Result;
+	if (T == NULL)
+	{
+		return 0;//Cây rỗng thì trả về 
+	}
+	if (T->data > x)
+	{
+		Result = deleteAVLNode(T->Left, x);
+		if (Result < 2)
+		{
+			return Result;
+		}
+		switch (T->BalFactor)
+		{
+		case LH:
+			T->BalFactor = EH;
+			return 2;
+		case EH:
+			T->BalFactor = RH;
+			return 1;
+		case RH:
+			return balanceRight(T);
+
+		}
+	}
+	else if (T->data < x)
+	{
+		Result = deleteAVLNode(T->Right, x);
+		if (Result < 2)
+		{
+			return Result;
+		}
+		switch (T->BalFactor)
+		{
+		case RH:
+			T->BalFactor = EH;
+			return 2;
+		case EH:
+			T->BalFactor = LH;
+			return 1;
+		case LH:
+			return balanceLeft(T);
+		}
+	}
+	else
+	{
+		AVLNode *p = T;
+		if (T->Left == NULL)
+		{
+			T = T->Right;
+			Result = 2;
+		}
+		else
+		{
+			if (T->Right == NULL)
+			{
+				T = T->Left;
+				Result = 2;
+			}
+			else
+			{
+				Result = searchStrandFor(p, T->Right);
+				if (Result < 2)
+				{
+					return Result;
+				}
+				switch (T->BalFactor)
+				{
+				case RH:
+					T->BalFactor = EH;
+					return 2;
+				case EH:
+					T->BalFactor = LH;
+					return 1;
+				case LH:
+					return balanceLeft(T);
+				}
+			}
+		}
+		delete p;
+		return Result;
+	}
+	return Result;
+}
+
+void createAVLTree(AVLNode*&T, int n)
+{
+	Itemtype x;
+	int Result, i = 1;
+	do
+	{
+		printf("Tao nut thu %d co gia tri: ", i);
+		scanf("%d", &x);
+		Result = insertAVNode(T, CreateAVLTNode(x));
+		if (Result != 0)
+		{
+			i++;
+
+		}
+	} while (i <= n);
+}
+int traverseLNR(AVLNode *root)
+{
+	if (root == NULL)
+	{
+		return NULL;
+	}
+	traverseLNR(root->Left);
+	printf("%4d", root->data);
+	traverseLNR(root->Right);
+}
+AVLNode *findAVLNode(AVLNode *root, Itemtype x)
+{
+	if (root == NULL)
+	{
+		return NULL;
+	}
+	if (root->data == x)
+		return root;
+	else if (root->data > x)
+		return findAVLNode(root->Left, x);
+	return findAVLNode(root->Right, x);
+}
+void ShowAVLTree(AVLNode *&T, int &flag)
+{//Hiển thị AVLTree theo quan he cha con 
+	if (T != NULL)
+		flag = 1;
+	if (T->Left != NULL && T->Right != NULL)
+		printf("%d-LeftChild:%d-RightChild:%d\n", T->data, T->Left->data, T->Right->data);
+	if (T->Left == NULL && T->Right != NULL)
+		printf("%d-LeftChild: NULL-RightChild:%d\n", T->data, T->Right->data);
+	if (T->Left != NULL && T->Right == NULL)
+		printf("%d-LeftChild:%d-RightChild: NULL\n", T->data, T->Left->data);
+	else
+
+		printf("%d-LeftChild:NULL-RightChild:NULL\n", T->data);
+	if (T->Left != NULL)
+		ShowAVLTree(T->Left, flag);
+	if (T->Right != NULL)
+	{
+		ShowAVLTree(T->Right, flag);
+	}
+	else if (T == NULL)
+	{
+		flag = 0;
+		printf("Tree root= NULL\n");
+	}
+}
+#endif//
+									Main
 #include<conio.h>
 #include<stdio.h>
 #include<stdlib.h>
