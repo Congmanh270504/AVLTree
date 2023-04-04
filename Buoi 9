@@ -1,0 +1,58 @@
+#include<conio.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include "CayAVL-SoNguyen.h"
+void Menu()
+{
+	printf("************MENU-Cay AVL*****************");
+	printf("\n*	1.Them node vao cay AVL		*");
+	printf("\n*	2.Xoa mot node			*");
+	printf("\n*	3.Tim kiem			*");
+	printf("\n*	4.Xuat noi dung cay(LNR)	*");
+	printf("\n*	0.Thoat chuong trinh		*");
+	printf("\n*****************************************");
+}
+int main()
+{
+	int Chonchucnang = 0, flag;
+	AVLNode*p;
+	Itemtype x;
+	AVLTree avl;
+	InitAVLTree(avl);
+	do
+	{
+		//printf
+		Menu();
+		printf("\nHay chon cac chuc nang tren cua cay AVL : ");
+		scanf("%d", &Chonchucnang);
+		switch (Chonchucnang)
+		{
+		case 1:
+			printf("Them node(so nguyen) ban muon them: ");
+			scanf("%d", &x);
+			p = CreateAVLTNode(x);
+			insertAVNode(avl.Root, p);
+			break;
+		case 2:
+			printf("Xoa node(so nguyen) ban muon xoa: ");
+			scanf("%d", &x);
+			deleteAVLNode(avl.Root, x);
+			break;
+		case 3:
+			if (findAVLNode(avl.Root, x)!=NULL)
+			{
+				printf("Co phan tu %d tren cay", x);
+			}
+			else
+			{
+				printf("Deo co!!");
+			}
+		case 4:
+			ShowAVLTree(avl.Root, flag);
+			break;
+		default:
+			break;
+		}
+	} while (Chonchucnang!=0);
+	_getch();
+}
